@@ -1,34 +1,43 @@
 #include "main.h"
-
 /**
- * _printf - function that replicates what printf does
- * @format: a character string
- *
- * Return:  the number of characters printed
+ * _printf - printf function
+ * @format: const char pointer
+ * Return: b_len
  */
 int _printf(const char *format, ...)
 {
-	print_type argument[] = {
-		{"c", _print_char},
-		{"s", _print_string},
-		{"%", _print_percent},
-		{"d", _print_int},
-		{"i", _print_int},
-		{"r", _print_reverse},
-		{"R", _print_rot13},
-		{"b", _print_binary},
-		{"u", _print_unsigned},
-		{"o", _print_octal},
-		{"x", _print_hex_l},
-		{"X", _print_hex_u},
-		{NULL, NULL}
-	};
-	va_list ap;
-	int count = 0;
-	
+	int (*pfunc)(va_list, flags_t *);
+	const char *p;
+	va_list arguments;
+	flags_t flags = {0, 0, 0};
 
-	va_start(ap, format);
-	count = get_print(format, argument, ap);
-	va_end(ap);
+	register int count = 0;
+
+	va_start(arguments, format);
+	if (!format || (format[0] == '%' && !format[1]))
+		return (-1);
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+	for (p = format; *p; p++)
+	{
+		if (*p == '%')
+		{
+			p++;
+			if (*p == '%')
+			{
+				count += _putchar('%');
+				continue;
+			}
+			while (get_flag(*p, &flags))
+				p++;
+			pfunc = get_print(*p);
+			count += (pfunc)
+				? pfunc(arguments, &flags)
+				: _printf("%%%c", *p);
+		} else
+			count += _putchar(*p);
+	}
+	_putchar(-1);
+	va_end(arguments);
 	return (count);
-}
+}}
